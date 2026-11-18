@@ -383,6 +383,12 @@ def packages_api_list():
     return jsonify(data)
 init_db()
 
+@app.route('/delete-emmanuel')
+def delete_emmanuel():
+    with db() as con:
+        con.execute("DELETE FROM packages WHERE tracking_no='LDT-0004'")
+        con.execute("DELETE FROM packages WHERE customer_name LIKE '%Emmanuel%'")
+    return "Emmanuel Deleted - Go back to Notifications"
 if __name__=="__main__":
     init_db()
     port = int(os.environ.get("PORT", 5000))
