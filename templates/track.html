@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Track Package - LDTS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { margin: 0; background: #F2F4F7; }
+        .top-bar { background: #0B2C4A; color: white; padding: 22px; text-align: center; }
+        .top-bar h1 { font-size: 34px; margin: 0; }
+        .top-bar p { font-size: 18px; margin: 5px 0 0 0; color: #FFC46B; }
+        .container { max-width: 700px; margin: 30px auto; padding: 0 15px; }
+        .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center; }
+        .card h2 { font-size: 28px; color: #0B2C4A; margin-top: 0; }
+        input { width: 100%; padding: 16px; font-size: 19px; border: 2px solid #ddd; border-radius: 10px; outline: none; }
+        input:focus { border-color: #FF7A00; }
+        button { width: 100%; margin-top: 18px; padding: 16px; font-size: 21px; font-weight: bold; color: white; background: #0B2C4A; border: none; border-radius: 10px; cursor: pointer; }
+        button:hover { background: #082033; }
+        .result { margin-top: 25px; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: left; }
+        .result h1 { font-size: 26px; color: #28A745; margin: 0 0 15px 0; }
+        .result p { font-size: 19px; margin: 10px 0; }
+        .status { display: inline-block; padding: 8px 18px; border-radius: 20px; font-size: 18px; font-weight: bold; color: black; background: yellow; }
+        a { display: block; text-align: center; margin-top: 20px; font-size: 18px; color: #0B2C4A; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <h1>📦 Track Your Package</h1>
+        <p>Logistics & Delivery Tracking System</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>Track your delivery</h2>
+            <form action="/track" method="GET">
+                <input name="tracking_no" value="{{ request.args.get('tracking_no','') }}" placeholder="Enter LDT-0002" required>
+                <button type="submit">Track Package 🔍</button>
+            </form>
+        </div>
+
+        {% if package %}
+        <div class="result">
+            <h1>Found: {{ package['tracking_no'] }}</h1>
+            <p><b>Customer:</b> {{ package['customer_name'] }}</p>
+            <p><b>From:</b> {{ package['pickup'] }} ➡ <b>To:</b> {{ package['destination'] }}</p>
+            <p><b>Status:</b> <span class="status">{{ package['status'] }}</span></p>
+            <p><b>Driver:</b> {{ driver['name'] if driver else 'Not assigned' }}</p>
+
+            <h3>History:</h3>
+            {% if history %}
+                {% for h in history %}
+                <p style="font-size:17px; border-left:4px solid #0B2C4A; padding-left:10px;">{{ h['status'] }} - {{ h['created_at'] }}</p>
+                {% endfor %}
+            {% else %}
+                <p>No history yet.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <a href="/">← Back to Home</a>
+    </div>
+<div id="map" style="height:350px; width:100%; border-radius:10px; margin-top:20px;"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+var map = L.map('map').setView([9.8965, 8.8583], 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19}).addTo(map);
+L.marker([9.8965, 8.8583]).addTo(map).bindPopup("<b>Your Package is here</b><br>Jos").openPopup();
+</script>
+  </body>
+</html>

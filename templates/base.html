@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title or "Logistics & Delivery Tracking" }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <header>
+        <div class="wrap nav"><a class="brand" href="/">🚚 LDTS <span>Logistics & Delivery Tracking System</span></a>
+            <button class="hamburger" style="margin-left:auto;" id="hamburgerBtn" onclick="document.getElementById('mainNav').classList.toggle('show')">☰</button>
+            <nav id="mainNav"><a href="/">Dashboard</a><a href="/track">Track a package</a><a href="/notifications">Notifications</a><a href="/routes">Routes</a> <a href="/logout">Logout</a>
+            </nav>
+        </div>
+    </header>
+    <main class="wrap">{% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category,
+        message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endif %}{% endwith
+        %}{% block content %}{% endblock %}</main>
+    <footer>Logistics & Delivery Tracking System · Academic prototype</footer>
+</body>
+
+</html>

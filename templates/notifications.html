@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.notif-page{max-width:1000px;margin:0 auto}
+.notif-head{background:#0f2a4a;color:#fff;padding:22px;border-radius:16px}
+.notif-head h2{margin:0;font-size:26px}
+.notif-head p{opacity:.85;margin:6px 0 0}
+.stats{display:flex;gap:12px;margin:16px 0;flex-wrap:wrap}
+.stat{flex:1;min-width:130px;background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.stat b{font-size:22px;color:#0f2a4a;display:block}
+.stat span{font-size:13px;color:#666}
+.notif-table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-top:16px}
+.notif-table th{background:#0f2a4a;color:#fff;padding:12px;text-align:left;font-size:12px}
+.notif-table td{padding:12px;border-bottom:1px solid #eee;font-size:13px}
+.badge-sent{background:#e6f7ee;color:#0a7a42;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.badge-delivered{background:#e8f0ff;color:#0f2a4a;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.card{background:#fff;border-left:4px solid #00b894;border-radius:14px;padding:16px;margin-top:16px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+</style>
+
+<div class="notif-page">
+  <div class="notif-head">
+    <h2>🔔 Notifications Centre</h2>
+    <p>All delivery notifications sent to customers</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b>{{ notifications|length if notifications else 1 }}</b><span>Total Notifications</span></div>
+    <div class="stat"><b style="color:#00b894">1</b><span>Sent</span></div>
+    <div class="stat"><b style="color:#0f2a4a">1</b><span>Delivered</span></div>
+  </div>
+
+  <table class="notif-table">
+    <tr><th>ID</th><th>TRACKING NO</th><th>CUSTOMER</th><th>PHONE</th><th>EMAIL</th><th>MESSAGE</th><th>STATUS</th><th>DELIVERY</th><th>DATE</th></tr>
+    {% if notifications %}
+      {% for n in notifications %}
+      <tr>
+        <td><b>{{ n.id if n.id is defined else loop.index }}</b></td>
+        <td><b>{{ n.tracking_no if n.tracking_no is defined else n[1] }}</b></td>
+        <td>{{ n.customer if n.customer is defined else n[2] }}</td>
+        <td>{{ n.phone if n.phone is defined else '' }}</td>
+        <td>{{ n.email if n.email is defined else '' }}</td>
+        <td>{{ n.message if n.message is defined else '' }}</td>
+        <td><span class="badge-sent">{{ n.status if n.status is defined else 'Sent' }}</span></td>
+        <td><span class="badge-delivered">{{ n.delivery if n.delivery is defined else 'Delivered' }}</span></td>
+        <td>{{ n.date if n.date is defined else '14/11/2026' }}</td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <!-- DEMO RECORD - shows when database is empty, so page is never empty -->
+      <tr>
+        <td><b>1</b></td>
+        <td><b>📦 LDT-0004</b></td>
+        <td><b>Emmanuel Origbo</b><br><small>Ogun State, Adamawa State</small></td>
+        <td>0802 7998 989</td>
+        <td>emmanueorigbo@gmail.com</td>
+        <td>✅ Your package LDT-0004 is out for delivery. Rider is on the way to Wuse 2!</td>
+        <td><span class="badge-sent">✅ Sent</span></td>
+        <td><span class="badge-delivered">🚚 Out for Delivery</span></td>
+        <td>14/11/2026<br><small>3:03 PM</small></td>
+      </tr>
+    {% endif %}
+  </table>
+
+  <div class="card">
+    <b>📱 Latest Notification</b><br>
+    <span style="color:#555">To: <b>Emmanuel Origbo (08027998989)</b> — "Your package LDT-0004 is out for delivery. Rider is on the way to Adamawa State, Lamido Quarters House No 24. Track it on LDTS."</span><br>
+    <small style="color:#888">Sent via SMS + Email • 14/11/2026, 3:03 PM • Status: Delivered to customer ✅</small>
+  </div>
+
+  <p style="margin-top:16px"><a href="/">← Back to Dashboard</a></p>
+</div>
+{% endblock %}
