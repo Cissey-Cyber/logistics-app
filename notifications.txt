@@ -1,2 +1,1 @@
-2026-11-04 22:01:39.936822 | To: Sam (sam@test.com/08012345678) | LOT-0001 | Out for Delivery | Package LOT-0001 is Out for Delivery
-2026-11-05 10:25:38.116476 | To: Sam Test (sam@test.com/08012345678) | LDTS001 | In Transit | Your package is on the way
+
