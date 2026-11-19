@@ -139,7 +139,7 @@ def init_db():
         con.execute("CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY AUTOINCREMENT, package_id INTEGER, status TEXT, location TEXT, note TEXT, created_at TEXT)")
         con.execute("CREATE TABLE IF NOT EXISTS NotificationAttempts (id INTEGER PRIMARY KEY AUTOINCREMENT, event_reference TEXT, package_reference TEXT, recipient TEXT, channel TEXT DEFAULT 'email', message_type TEXT DEFAULT 'status_update', attempt_count INTEGER DEFAULT 1, status TEXT DEFAULT 'pending', idempotency_key TEXT, provider_response TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(event_reference, channel, message_type))")
         con.execute("CREATE TABLE IF NOT EXISTS Routes (id INTEGER PRIMARY KEY AUTOINCREMENT, optimized_order TEXT, method TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP)")
-        if con.execute("SELECT COUNT(*) FROM drivers").fetchone()[0]==0:
+        if con.execute("SELECT COUNT(*) FROM drivers").fetchone()["count"]==0:
             con.execute("INSERT INTO drivers(name, phone, status) VALUES('John Driver','08012345678','Available')")
 
 # Helper to find package
@@ -147,11 +147,11 @@ def get_pkg(identifier):
     with db() as con:
         try:
             pid = int(identifier)
-            pkg = con.execute("SELECT * FROM packages WHERE id=?", (pid,)).fetchone()
+            pkg = con.execute("SELECT * FROM packages WHERE id=%s", (pid,)).fetchone()
             if pkg: return pkg
         except:
             pass
-        return con.execute("SELECT * FROM packages WHERE tracking_no=?", (str(identifier),)).fetchone()
+        return con.execute("SELECT * FROM packages WHERE tracking_no=%s", (str(identifier),)).fetchone()
 
 notifications_log = []
 
@@ -318,15 +318,15 @@ def packages_new():
     if request.method=='POST':
         data = request.form
         with db() as con:
-            count = con.execute("SELECT COUNT(*) FROM packages").fetchone()[0] + 1
+            count = con.execute("SELECT COUNT(*) FROM packages").fetchone()["count"] + 1
             tracking = data.get("tracking_no") or f"LDT-{count:04d}"
             now = datetime.now(timezone.utc).isoformat(timespec="seconds")
-            cur = con.execute("INSERT INTO packages(tracking_no,customer_name,customer_phone,pickup,destination,status,created_at,updated_at,notes) VALUES(?,?,?,?,?,'Pending',?,?,?)", (tracking, data["customer_name"], data.get("customer_phone"), data["pickup"], data["destination"], now, now, data.get("notes")))
-            pid = cur.lastrowid
+            cur = con.execute("INSERT INTO packages(tracking_no,customer_name,customer_phone,pickup,destination,status,created_at,updated_at,notes) VALUES(%s,%s,%s,%s,%s,'Pending',%s,%s,%s) RETURNING id", (tracking, data["customer_name"], data.get("customer_phone"), data["pickup"], data["destination"], now, now, data.get("notes")))
+            pid = cur.fetchone()["id"]
             drv = con.execute("SELECT id FROM drivers WHERE status='Available' LIMIT 1").fetchone()
             if drv:
-                con.execute("UPDATE packages SET driver_id=?, status='Assigned' WHERE id=?", (drv[0], pid))
-                con.execute("UPDATE drivers SET status='On delivery' WHERE id=?", (drv[0],))
+                con.execute("UPDATE packages SET driver_id=%s, status='Assigned' WHERE id=%s", (drv["id"], pid))
+                con.execute("UPDATE drivers SET status='On delivery' WHERE id=%s", (drv["id"],))
             con.commit()
         return redirect(url_for("packages_list"))
     try: return render_template("new_package.html")
@@ -338,8 +338,8 @@ def package_detail(id_or_tracking):
     pkg = get_pkg(id_or_tracking)
     if not pkg: return "Package Not Found", 404
     with db() as con:
-        driver = con.execute("SELECT * FROM drivers WHERE id=?", (pkg["driver_id"],)).fetchone() if pkg["driver_id"] else None
-        events = con.execute("SELECT * FROM events WHERE package_id=? ORDER BY id DESC", (pkg["id"],)).fetchall()
+        driver = con.execute("SELECT * FROM drivers WHERE id=%s", (pkg["driver_id"],)).fetchone() if pkg["driver_id"] else None
+        events = con.execute("SELECT * FROM events WHERE package_id=%s ORDER BY id DESC", (pkg["id"],)).fetchall()
         all_drivers = con.execute("SELECT * FROM drivers").fetchall()
     try:
         return render_template("package_detail.html", package=pkg, driver=driver, events=events, drivers=all_drivers)
@@ -364,11 +364,11 @@ def update_status(package_id=None):
     note = data.get("note") or data.get("update_note") or ""
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     with db() as con:
-        con.execute("UPDATE packages SET status=?, updated_at=? WHERE id=?", (status, now, pkg["id"]))
-        con.execute("INSERT INTO events(package_id,status,location,note,created_at) VALUES(?,?,?,?,?)", (pkg["id"], status, location, note, now))
+        con.execute("UPDATE packages SET status=%s, updated_at=%s WHERE id=%s", (status, now, pkg["id"]))
+        con.execute("INSERT INTO events(package_id,status,location,note,created_at) VALUES(%s,%s,%s,%s,%s)", (pkg["id"], status, location, note, now))
         if status.lower() in ["delivered", "delivered successfully"]:
             if pkg["driver_id"]:
-                con.execute("UPDATE drivers SET status='Available' WHERE id=?", (pkg["driver_id"],))
+                con.execute("UPDATE drivers SET status='Available' WHERE id=%s", (pkg["driver_id"],))
         con.commit()
     flash(f"Status updated to {status}", "success")
     return redirect(url_for("package_detail", id_or_tracking=pkg["tracking_no"]))
@@ -387,9 +387,9 @@ def assign_driver(package_id=None):
         return redirect(url_for("packages_list"))
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     with db() as con:
-        con.execute("UPDATE packages SET driver_id=?, status='Assigned', updated_at=? WHERE id=?", (driver_id, now, pkg["id"]))
-        con.execute("UPDATE drivers SET status='On delivery' WHERE id=?", (driver_id,))
-        con.execute("INSERT INTO events(package_id,status,location,note,created_at) VALUES(?,?,?,?,?)", (pkg["id"], "Assigned", pkg["destination"], f"Assigned to driver {driver_id}", now))
+        con.execute("UPDATE packages SET driver_id=%s, status='Assigned', updated_at=%s WHERE id=%s", (driver_id, now, pkg["id"]))
+        con.execute("UPDATE drivers SET status='On delivery' WHERE id=%s", (driver_id,))
+        con.execute("INSERT INTO events(package_id,status,location,note,created_at) VALUES(%s,%s,%s,%s,%s,)", (pkg["id"], "Assigned", pkg["destination"], f"Assigned to driver {driver_id}", now))
         con.commit()
     return redirect(url_for("package_detail", id_or_tracking=pkg["tracking_no"]))
 
@@ -407,8 +407,8 @@ def track_page(tracking_no=None):
     pkg = get_pkg(tracking_no)
     if not pkg: return f"<h1>Not Found {tracking_no}</h1><a href='/track'>Try again</a>", 404
     with db() as con:
-        events = con.execute("SELECT * FROM events WHERE package_id=? ORDER BY id ASC", (pkg["id"],)).fetchall()
-        driver = con.execute("SELECT * FROM drivers WHERE id=?", (pkg["driver_id"],)).fetchone() if pkg["driver_id"] else None
+        events = con.execute("SELECT * FROM events WHERE package_id=%s ORDER BY id ASC", (pkg["id"],)).fetchall()
+        driver = con.execute("SELECT * FROM drivers WHERE id=%s", (pkg["driver_id"],)).fetchone() if pkg["driver_id"] else None
     try:
         return render_template("track.html", package=pkg, events=events, driver=driver)
     except:
