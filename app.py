@@ -258,11 +258,11 @@ def optimize_route():
 def index():
     with db() as con:
         pkgs = con.execute("SELECT p.*, d.name as driver_name FROM packages p LEFT JOIN drivers d ON p.driver_id=d.id ORDER BY p.id DESC").fetchall()
-        total = con.execute("SELECT COUNT(*) FROM packages").fetchone()[0]
-        in_transit = con.execute("SELECT COUNT(*) FROM packages WHERE status IN ('Assigned','In transit','In Transit','On delivery','Shipped')").fetchone()[0]
-        delivered = con.execute("SELECT COUNT(*) FROM packages WHERE status LIKE '%Deliver%'").fetchone()[0]
-        total_drivers = con.execute("SELECT COUNT(*) FROM drivers").fetchone()[0]
-        pending = con.execute("SELECT COUNT(*) FROM packages WHERE status='Pending'").fetchone()[0]
+        total = con.execute("SELECT COUNT(*) FROM packages").fetchone()['count']
+        in_transit = con.execute("SELECT COUNT(*) FROM packages WHERE status IN ('Assigned','In transit','In Transit','On delivery','Shipped')").fetchone()['count']
+        delivered = con.execute("SELECT COUNT(*) FROM packages WHERE status LIKE '%Deliver%'").fetchone()['count']
+        total_drivers = con.execute("SELECT COUNT(*) FROM drivers").fetchone()['count']
+        pending = con.execute("SELECT COUNT(*) FROM packages WHERE status='Pending'").fetchone()['count']
         drivers = con.execute("SELECT * FROM drivers").fetchall()
     stats = {
         "total": total, "total_packages": total,
