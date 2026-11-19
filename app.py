@@ -1,14 +1,77 @@
-import sqlite3
+import os
 from datetime import datetime, timezone
 from flask import Flask, request, redirect, url_for, render_template, session, flash
 import requests
 import hashlib
-import os
 import math
 
-app = Flask(__name__)
-app.secret_key = "logistics-secret"
+# --- Postgres / SQLite compat layer ---
+try:
+    import psycopg2
+    import psycopg2.extras
+except ImportError:
+    psycopg2 = None
+try:
+    import sqlite3
+except ImportError:
+    sqlite3 = None
+
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 DB_PATH = "logistics.db"
+
+class PGWrapperCursor:
+    def __init__(self, cur, lastrowid=None):
+        self._cur = cur
+        self.lastrowid = lastrowid
+    def fetchone(self):
+        return self._cur.fetchone()
+    def fetchall(self):
+        return self._cur.fetchall()
+    def close(self):
+        self._cur.close()
+
+class PGConn:
+    def __init__(self, url):
+        self._conn = psycopg2.connect(url, cursor_factory=psycopg2.extras.RealDictCursor)
+        self._conn.autocommit = False
+    def _translate(self, sql):
+        sql = sql.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY")
+        sql = sql.replace("AUTOINCREMENT", "")
+        sql = sql.replace("?", "%s")
+        return sql
+    def execute(self, sql, params=None):
+        sql2 = self._translate(sql)
+        cur = self._conn.cursor()
+        is_insert = sql2.strip().upper().startswith("INSERT")
+        if is_insert and "RETURNING" not in sql2.upper():
+            sql2 = sql2 + " RETURNING id"
+            cur.execute(sql2, params or ())
+            row = cur.fetchone()
+            last = row["id"] if row else None
+            return PGWrapperCursor(cur, lastrowid=last)
+        cur.execute(sql2, params or ())
+        return PGWrapperCursor(cur)
+    def commit(self):
+        self._conn.commit()
+    def close(self):
+        try: self._conn.close()
+        except: pass
+    def __enter__(self):
+        return self
+    def __exit__(self, *a):
+        try: self._conn.commit()
+        except: pass
+        self.close()
+        return False
+
+def db():
+    if DATABASE_URL and psycopg2:
+        return PGConn(DATABASE_URL)
+    con = sqlite3.connect(DB_PATH)
+    con.row_factory = sqlite3.Row
+    return con
 # --- ADMIN LOGIN ---
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "LDTS123"
@@ -64,10 +127,7 @@ def nearest_neighbour(packages, start=WUSE_DEPOT):
         unvisited.remove(nxt)
     return order
 
-def db():
-    con = sqlite3.connect(DB_PATH)
-    con.row_factory = sqlite3.Row
-    return con
+
 
 def init_db():
     with db() as con:
