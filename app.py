@@ -260,7 +260,7 @@ def index():
         pkgs = con.execute("SELECT p.*, d.name as driver_name FROM packages p LEFT JOIN drivers d ON p.driver_id=d.id ORDER BY p.id DESC").fetchall()
         total = con.execute("SELECT COUNT(*) FROM packages").fetchone()['count']
         in_transit = con.execute("SELECT COUNT(*) FROM packages WHERE status IN ('Assigned','In transit','In Transit','On delivery','Shipped')").fetchone()['count']
-        delivered = con.execute("SELECT COUNT(*) FROM packages WHERE status LIKE '%Deliver%'").fetchone()['count']
+        delivered = con.execute("SELECT COUNT(*) FROM packages WHERE status = 'Delivered'").fetchone()['count']
         total_drivers = con.execute("SELECT COUNT(*) FROM drivers").fetchone()['count']
         pending = con.execute("SELECT COUNT(*) FROM packages WHERE status='Pending'").fetchone()['count']
         drivers = con.execute("SELECT * FROM drivers").fetchall()
