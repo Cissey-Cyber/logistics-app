@@ -5,6 +5,9 @@ import requests
 import hashlib
 import math
 
+app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "logistics-secret-change-me")
+
 # --- Postgres / SQLite compat layer ---
 try:
     import psycopg2
