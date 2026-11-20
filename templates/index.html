@@ -1,42 +1,18 @@
-{% extends "base.html" %}
-{% block content %}
-<style>
-body{background:#f4f6f9}
-.wrap{max-width:1000px;margin:0 auto;padding:16px}
-.top{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
-.top a{background:#1a237e;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:bold}
-.search{width:100%;padding:13px;border-radius:10px;border:1px solid #ddd;font-size:16px;box-sizing:border-box}
-.card{background:#fff;padding:16px;margin:12px 0;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.07);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.badge{padding:6px 12px;border-radius:20px;color:#fff;font-size:13px;font-weight:bold}
-.Delivered{background:#2e7d32}.Pending{background:#ef6c00}.Assigned{background:#6a1b9a}.Transit{background:#1565c0}.In{background:#1565c0}
-.btn{background:#1a237e;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;margin-left:5px}
-.btn2{background:#0288d1}
-</style>
-<div class="wrap">
-<h1>📦 All Packages</h1>
-<div class="top">
-<a href="/new_shipment">+ New Shipment</a>
-<a href="/notifications">🔔 Notifications</a>
-<a href="/routes">🗺️ Route Optimization</a>
-<a href="/track">🔍 Track</a>
-</div>
-<input class="search" id="s" onkeyup="f()" placeholder="🔍 Search by tracking, name, status...">
-<div id="list">
-{% for p in packages %}
-{% set tid = p.tracking_no or p.tracking_code or p.tracking or p.code or p[1] if p is mapping else p[1] %}
-{% set name = p.receiver_name or p.receiver or p.name or p.customer or p[2] if p is mapping else p[2] %}
-{% set status = p.status or p[3] if p is mapping else p[3] %}
-{% set pid = p.id or p[0] if p is mapping else p[0] %}
-{% set dest = p.destination or p.dest or p[4] if p is mapping else '' %}
-{% set orig = p.origin or p[5] if p is mapping else '' %}
-<div class="card" data-t="{{ tid }} {{ name }} {{ status }}">
-<div><b style="font-size:18px">{{ tid or ('ID ' ~ pid) }}</b><br>{{ name }}<br><small>{{ orig }} → {{ dest }}</small></div>
-<div><span class="badge {{ status }}">{{ status or 'Pending' }}</span><a class="btn" href="/track?code={{ tid }}">Track</a><a class="btn btn2" href="/packages/{{ pid }}">View →</a></div>
-</div>
-{% else %}
-<p>No packages yet. <a href="/new_shipment">Create one</a></p>
-{% endfor %}
-</div>
-</div>
-<script>function f(){let v=document.getElementById('s').value.toLowerCase();document.querySelectorAll('.card').forEach(c=>{c.style.display=c.dataset.t.toLowerCase().includes(v)?'flex':'none'})}</script>
+{% extends "base.html" %}{% block content %}
+<section class="hero"><div><p class="eyebrow">OPERATIONS OVERVIEW</p><h1>Delivery control centre</h1><p>Register shipments, assign drivers and keep customers informed.</p></div><a class="button" href="#new-package">＋ New shipment</a></section>
+<section class="stats"><div class="stat"><span>Total packages</span><strong>{{ stats.total }}</strong></div><div class="stat"><span>In transit</span><strong>{{ stats.transit }}</strong></div><div class="stat"><span>Delivered</span><strong>{{ stats.delivered }}</strong></div><div class="stat"><span>Drivers</span><strong>{{ stats.drivers }}</strong></div></section>
+<div class="columns"><section class="panel" id="new-package"><h2>Register a package</h2><form method="post" action="/packages/new" class="form-grid">
+<label>Customer name<input name="customer_name" required placeholder="Customer full name"></label><label>Customer phone<input name="customer_phone" placeholder="Phone for notifications"></label>
+<label>Pickup location<input name="pickup" required placeholder="Origin / pickup address"></label><label>Destination<input name="destination" required placeholder="Delivery address"></label>
+<label class="wide">Notes<input name="notes" placeholder="Optional delivery instructions"></label><button class="button wide" type="submit">Create shipment</button></form></section>
+<section class="panel"><h2>Add a driver</h2><form method="post" action="/drivers/new" class="form-grid"><label>Driver name<input name="name" required></label><label>Phone<input name="phone"></label><label class="wide">Vehicle / registration<input name="vehicle"></label><button class="button wide">Add driver</button></form>
+<h3>Driver roster</h3><div class="driver-list">{% for d in drivers %}<div class="driver"><div><strong>{{ d.name }}</strong><small>{{ d.vehicle or "Vehicle not set" }} · {{ d.phone or "No phone" }}</small></div><span class="pill">{{ d.status }}</span></div>{% endfor %}</div></section></div>
+<section class="panel"><div class="section-heading"><h2>Shipments</h2><a href="/api/notifications">View notification API →</a></div><div class="table-wrap"><table><thead><tr><th>Tracking no.</th><th>Customer</th><th>Route</th><th>Status</th><th>Driver</th><th>Update status</th><th>Assign driver</th></tr></thead><tbody>
+{% for p in packages %}<tr><td><a class="tracking" href="/track?tracking_no={{ p.tracking_no }}">{{ p.tracking_no }}</a><small>{{ p.updated_at[:16].replace('T',' ') }} UTC</small></td><td>{{ p.customer_name }}<small>{{ p.customer_phone }}</small></td><td>{{ p.pickup }}<span class="arrow">↓</span>{{ p.destination }}</td><td><span class="status {{ p.status|lower|replace(' ','-') }}">{{ p.status }}</span></td><td>{{ p.driver_name or "Unassigned" }}</td>
+<td><form class="inline-form" method="post" action="/packages/{{ p.id }}/update"><select name="status">{% for s in ['Pending','Picked Up','In Transit','Out for Delivery','Delivered','Delayed','Cancelled'] %}<option {% if p.status==s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select><input name="location" placeholder="Current location"><input name="note" placeholder="Update note"><button class="small-button">Save</button></form></td>
+<td><form class="inline-form" method="post" action="/packages/{{ p.id }}/assign"><select name="driver_id" required><option value="">Select driver</option>{% for d in drivers %}<option value="{{ d.id }}" {% if p.driver_id==d.id %}selected{% endif %}>{{ d.name }}</option>{% endfor %}</select><button class="small-button">Assign</button></form></td></tr>{% else %}<tr><td colspan="7">No packages yet. Register your first shipment above.</td></tr>{% endfor %}
+</tbody></table></div></section>
+<section class="panel"><h2>Route optimization API</h2><p>POST a list of stops with latitude and longitude to <code>/routes/optimize</code>. The service returns a nearest-neighbour stop order and estimated straight-line distance.</p><pre>curl -X POST http://127.0.0.1:5000/routes/optimize \
+  -H "Content-Type: application/json" \
+  -d '{"start":{"lat":12.00,"lon":8.52},"stops":[{"name":"Stop A","lat":12.01,"lon":8.53},{"name":"Stop B","lat":12.04,"lon":8.50}]}'</pre></section>
 {% endblock %}
