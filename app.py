@@ -4,6 +4,7 @@ from flask import Flask, request, redirect, url_for, render_template, session, f
 import requests
 import hashlib
 import math
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "logistics-secret-change-me")
@@ -88,18 +89,51 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/register", methods=["GET","POST"])
+def register():
+    if request.method == "POST":
+        full_name = request.form.get("full_name")
+        phone = request.form.get("phone")
+        email = request.form.get("email")
+        username = request.form.get("username")
+        password = request.form.get("password")
+        confirm = request.form.get("confirm_password")
+        if password != confirm:
+            flash("Passwords do not match!")
+            return redirect(url_for("register"))
+        if not all([full_name, phone, email, username, password]):
+            flash("Fill all fields!")
+            return redirect(url_for("register"))
+        try:
+            with db() as con:
+                con.execute("CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT, full_name TEXT, phone TEXT, email TEXT, username TEXT UNIQUE, password_hash TEXT, created_at TEXT)")
+                con.execute("INSERT INTO users(full_name,phone,email,username,password_hash,created_at) VALUES(?,?,?,?,?,?)", (full_name, phone, email, username, generate_password_hash(password), datetime.now().isoformat()))
+                con.commit()
+            flash("Account created! Login now.")
+            return redirect(url_for("login"))
+        except:
+            flash("Username or Email already exists!")
+            return redirect(url_for("register"))
+    return render_template("register.html")
+
+@app.route("/login", methods=["GET","POST"])
 def login():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        if username == "admin" and password == "LDTS123":
             session["admin_logged_in"] = True
+            session["admin_name"] = "Admin One"
             return redirect(url_for("index"))
-        else:
-            flash("Wrong username or password!")
+        with db() as con:
+            con.execute("CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT, full_name TEXT, phone TEXT, email TEXT, username TEXT UNIQUE, password_hash TEXT, created_at TEXT)")
+            user = con.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
+        if user and check_password_hash(user["password_hash"], password):
+            session["admin_logged_in"] = True
+            session["admin_name"] = user["full_name"]
+            return redirect(url_for("index"))
+        flash("Wrong username or password!")
     return render_template("login.html")
-
 @app.route("/logout")
 def logout():
     session.pop("admin_logged_in", None)
