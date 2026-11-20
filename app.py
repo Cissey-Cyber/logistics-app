@@ -173,6 +173,7 @@ def init_db():
         con.execute("CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY AUTOINCREMENT, package_id INTEGER, status TEXT, location TEXT, note TEXT, created_at TEXT)")
         con.execute("CREATE TABLE IF NOT EXISTS NotificationAttempts (id INTEGER PRIMARY KEY AUTOINCREMENT, event_reference TEXT, package_reference TEXT, recipient TEXT, channel TEXT DEFAULT 'email', message_type TEXT DEFAULT 'status_update', attempt_count INTEGER DEFAULT 1, status TEXT DEFAULT 'pending', idempotency_key TEXT, provider_response TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(event_reference, channel, message_type))")
         con.execute("CREATE TABLE IF NOT EXISTS Routes (id INTEGER PRIMARY KEY AUTOINCREMENT, optimized_order TEXT, method TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP)")
+        con.execute("CREATE TABLE IF NOT EXISTS notifications(id INTEGER PRIMARY KEY AUTOINCREMENT, package_id INTEGER, message TEXT, is_read INTEGER DEFAULT 0, created_at TEXT)")
         if con.execute("SELECT COUNT(*) FROM drivers").fetchone()["count"]==0:
             con.execute("INSERT INTO drivers(name, phone, status) VALUES('John Driver','08012345678','Available')")
 
