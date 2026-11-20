@@ -403,7 +403,7 @@ def update_status(package_id=None):
         con.execute("INSERT INTO events(package_id,status,location,note,created_at) VALUES(%s,%s,%s,%s,%s)", (pkg["id"], status, location, note, now))
         try:
             con.execute("INSERT INTO notifications (package_id, message, is_read, created_at) VALUES (%s, %s, 0, %s)", (pid, f"Your package {pkg['tracking_no']} status updated to {status} - {location}", now))
-         except Exception:
+        except Exception:
             pass
         if status.lower() in ["delivered", "delivered successfully"]:
             if pkg["driver_id"]:
