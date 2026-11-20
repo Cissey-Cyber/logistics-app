@@ -8,7 +8,7 @@ body{background:#f4f6f9}
 .search{width:100%;padding:13px;border-radius:10px;border:1px solid #ddd;font-size:16px;box-sizing:border-box}
 .card{background:#fff;padding:16px;margin:12px 0;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.07);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .badge{padding:6px 12px;border-radius:20px;color:#fff;font-size:13px;font-weight:bold}
-.Delivered{background:#2e7d32}.Pending{background:#ef6c00}.Assigned{background:#6a1b9a}.Transit{background:#1565c0}
+.Delivered{background:#2e7d32}.Pending{background:#ef6c00}.Assigned{background:#6a1b9a}.Transit{background:#1565c0}.In{background:#1565c0}
 .btn{background:#1a237e;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;margin-left:5px}
 .btn2{background:#0288d1}
 </style>
@@ -23,13 +23,15 @@ body{background:#f4f6f9}
 <input class="search" id="s" onkeyup="f()" placeholder="🔍 Search by tracking, name, status...">
 <div id="list">
 {% for p in packages %}
-{% set tid = p.tracking_code if p.tracking_code is defined else p[1] %}
-{% set name = p.receiver_name if p.receiver_name is defined else p[2] %}
-{% set status = p.status if p.status is defined else p[3] %}
-{% set pid = p.id if p.id is defined else p[0] %}
+{% set tid = p.tracking_no or p.tracking_code or p.tracking or p.code or p[1] if p is mapping else p[1] %}
+{% set name = p.receiver_name or p.receiver or p.name or p.customer or p[2] if p is mapping else p[2] %}
+{% set status = p.status or p[3] if p is mapping else p[3] %}
+{% set pid = p.id or p[0] if p is mapping else p[0] %}
+{% set dest = p.destination or p.dest or p[4] if p is mapping else '' %}
+{% set orig = p.origin or p[5] if p is mapping else '' %}
 <div class="card" data-t="{{ tid }} {{ name }} {{ status }}">
-<div><b style="font-size:18px">{{ tid }}</b><br>{{ name }}<br><small>{{ p.origin if p.origin is defined else '' }} → {{ p.destination if p.destination is defined else '' }}</small></div>
-<div><span class="badge {{ status }}">{{ status }}</span><a class="btn" href="/track?code={{ tid }}">Track</a><a class="btn btn2" href="/packages/{{ pid }}">View →</a></div>
+<div><b style="font-size:18px">{{ tid or ('ID ' ~ pid) }}</b><br>{{ name }}<br><small>{{ orig }} → {{ dest }}</small></div>
+<div><span class="badge {{ status }}">{{ status or 'Pending' }}</span><a class="btn" href="/track?code={{ tid }}">Track</a><a class="btn btn2" href="/packages/{{ pid }}">View →</a></div>
 </div>
 {% else %}
 <p>No packages yet. <a href="/new_shipment">Create one</a></p>
