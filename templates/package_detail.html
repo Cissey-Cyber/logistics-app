@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+body{background:#e8eef5 !important}
+.box{background:white;max-width:800px;margin:auto;padding:25px;border-radius:15px;box-shadow:0 5px 20px rgba(0,0,0,0.08)}
+h1{color:#334155;margin:0}
+p{color:#475569;font-size:17px}
+.btn{background:#64748b;color:white;padding:9px 16px;border-radius:8px;text-decoration:none;display:inline-block;margin-right:8px}
+.info{background:#f8fafc;border:1px solid #e2e8f0;padding:14px;border-radius:10px;margin:12px 0}
+</style>
+<div class="box">
+<h1>{{ p.tracking_no }}</h1>
+<div class="info">
+<p><b>Customer:</b> {{ p.customer_name }}</p>
+<p><b>Status:</b> {{ p.status }}</p>
+<p><b>From:</b> {{ p.origin }} &nbsp; <b>To:</b> {{ p.destination }}</p>
+</div>
+<a class="btn" href="/track/{{ p.tracking_no }}">Track</a>
+<a class="btn" href="/packages">Back to All Packages</a>
+</div>
+{% endblock %}
