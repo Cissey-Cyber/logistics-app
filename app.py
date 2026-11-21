@@ -344,8 +344,18 @@ def packages_list():
     try:
         return render_template("packages.html", packages=pkgs)
     except:
-        html = f"<h1>All Packages ({len(pkgs)})</h1><a href='/packages/new'>+ New Shipment</a> | <a href='/'>Dashboard</a><ul>"
-        for p in pkgs: html+=f"<li><a href='/track/{p['tracking_no']}'>{p['tracking_no']}</a> - {p['customer_name']} - {p['status']} - <a href='/packages/{p['id']}'>View</a></li>"
+        html = f"""<html><head><style>
+        body{{font-family:Arial;background:#f3e8ff;padding:20px}}
+        .box{{background:white;max-width:800px;margin:auto;padding:25px;border-radius:15px;box-shadow:0 5px 20px rgba(0,0,0,0.1)}}
+        h1{{color:#6d28d9}}
+        a{{background:#7c3aed;color:white;padding:8px 14px;border-radius:8px;text-decoration:none}}
+        li{{background:#faf5ff;padding:12px;margin:10px 0;border-radius:10px;list-style:none;border-left:4px solid #7c3aed}}
+        </style></head><body><div class='box'>
+        <h1>All Packages ({len(pkgs)})</h1>
+        <a href='/packages/new'>+ New Shipment</a> <a href='/'>Dashboard</a><ul>"""
+        for p in pkgs:
+            html += f"<li><a href='/track/{p['tracking_no']}'>{p['tracking_no']}</a> - {p['customer_name']} - {p['status']} - <a href='/packages/{p['id']}'>View</a></li>"
+        html += "</ul></div></body></html>"
         return html
 
 @app.route('/packages/new', methods=['GET','POST'])
