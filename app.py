@@ -345,11 +345,11 @@ def packages_list():
         return render_template("packages.html", packages=pkgs)
     except:
         html = f"""<html><head><style>
-        body{{font-family:Arial;background:#f3e8ff;padding:20px}}
+        body{{font-family:Arial;background:#e0f2fe;padding:20px}}
         .box{{background:white;max-width:800px;margin:auto;padding:25px;border-radius:15px;box-shadow:0 5px 20px rgba(0,0,0,0.1)}}
-        h1{{color:#6d28d9}}
-        a{{background:#7c3aed;color:white;padding:8px 14px;border-radius:8px;text-decoration:none}}
-        li{{background:#faf5ff;padding:12px;margin:10px 0;border-radius:10px;list-style:none;border-left:4px solid #7c3aed}}
+        h1{{color:#1d4ed8}}
+        a{{background:#16a34a;color:white;padding:8px 14px;border-radius:8px;text-decoration:none}}
+        li{{background:#f0fdf4;padding:12px;margin:10px 0;border-radius:10px;list-style:none;border-left:4px solid #16a34a}}
         </style></head><body><div class='box'>
         <h1>All Packages ({len(pkgs)})</h1>
         <a href='/packages/new'>+ New Shipment</a> <a href='/'>Dashboard</a><ul>"""
