@@ -39,7 +39,7 @@ class PGWrapperCursor:
 class PGConn:
     def __init__(self, url):
         self._conn = psycopg2.connect(url, cursor_factory=psycopg2.extras.RealDictCursor)
-        self.conn.autocommit = True
+        self._conn.autocommit = True
     def _translate(self, sql):
         sql = sql.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY")
         sql = sql.replace("AUTOINCREMENT", "")
