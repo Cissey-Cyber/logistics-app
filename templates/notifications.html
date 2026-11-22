@@ -24,13 +24,13 @@
   </div>
 
   <div class="stats">
-    <div class="stat"><b>{{ notifications|length if notifications else 1 }}</b><span>Total Notifications</span></div>
-    <div class="stat"><b style="color:#00b894">1</b><span>Sent</span></div>
-    <div class="stat"><b style="color:#0f2a4a">1</b><span>Delivered</span></div>
+    <div class="stat"><b>{{ notifications|length if notifications else 3 }}</b><span>Total Notifications</span></div>
+    <div class="stat"><b style="color:#00b894">3</b><span>Sent</span></div>
+    <div class="stat"><b style="color:#0f2a4a">3</b><span>Delivered</span></div>
   </div>
 
   <table class="notif-table">
-    <tr><th>ID</th><th>TRACKING NO</th><th>CUSTOMER</th><th>PHONE</th><th>EMAIL</th><th>MESSAGE</th><th>STATUS</th><th>DELIVERY</th><th>DATE</th></tr>
+    <tr><th>ID</th><th>TRACKING NO</th><th>CUSTOMER</th><th>PHONE</th><th>MESSAGE</th><th>STATUS</th><th>DELIVERY</th><th>DATE</th></tr>
     {% if notifications %}
       {% for n in notifications %}
       <tr>
@@ -38,7 +38,6 @@
         <td><b>{{ n.tracking_no if n.tracking_no is defined else n[1] }}</b></td>
         <td>{{ n.customer if n.customer is defined else n[2] }}</td>
         <td>{{ n.phone if n.phone is defined else '' }}</td>
-        <td>{{ n.email if n.email is defined else '' }}</td>
         <td>{{ n.message if n.message is defined else '' }}</td>
         <td><span class="badge-sent">{{ n.status if n.status is defined else 'Sent' }}</span></td>
         <td><span class="badge-delivered">{{ n.delivery if n.delivery is defined else 'Delivered' }}</span></td>
@@ -52,20 +51,33 @@
         <td><b>📦 LDT-0001</b></td>
         <td><b>Aliyu Nafiu</b><br><small>Kano, Abuja</small></td>
         <td>09133333207</td>
-        <td>aliyunafiu07@gmail.com</td>
-        <td>✅ Your package LDT-0001 is out for delivery. Rider is on the way to Wuse 2!</td>
+        <td>✅ Your package LDT-0001 is out for delivery. Rider is on the way to Abuja!</td>
         <td><span class="badge-sent">✅ Sent</span></td>
         <td><span class="badge-delivered">🚚 Out for Delivery</span></td>
         <td>18/11/2026<br><small>3:03 PM</small></td>
       </tr>
+    <tr>
+<td><b>2</b></td>
+<td><b>📦 LDT-0002</b></td>
+<td><b>Benjamin Ibrahim</b><br><small>Lagos, Jos</small></td>
+<td>08148172222</td>
+<td>✅ Your package LDT-0002 has been received. It is being prepared for delivery.</td>
+<td><span class="badge-sent">✅ Sent</span></td>
+<td><span class="badge-delivered">📦 Received</span></td>
+<td>20/11/2026<br><small>2:20 PM</small></td>
+</tr>
+<tr>
+<td><b>3</b></td>
+<td><b>📦 LDT-0003</b></td>
+<td><b>Destiny Igbinosa</b><br><small>Garki Abuja, Wuse II Abuja</small></td>
+<td>07069523333</td>
+<td>✅ Your package LDT-0003 is out for delivery. Rider is on the way to Wuse II.</td>
+<td><span class="badge-sent">✅ Sent</span></td>
+<td><span class="badge-delivered">🚚 Out for Delivery</span></td>
+<td>19/11/2026<br><small>2:22 PM</small></td>
+</tr>
     {% endif %}
   </table>
-
-  <div class="card">
-    <b>📱 Latest Notification</b><br>
-    <span style="color:#555">To: <b>Aliyu Nafiu (09133333207)</b> — "Your package LDT-0001 is out for delivery. Rider is on the way from Kano to Abuja. Track it on LDTS."</span><br>
-    <small style="color:#888">Sent via SMS + Email • 18/11/2026, 3:03 PM • Status: Delivered to customer ✅</small>
-  </div>
 
   <p style="margin-top:16px"><a href="/">← Back to Dashboard</a></p>
 </div>
