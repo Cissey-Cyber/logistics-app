@@ -417,7 +417,7 @@ def update_status(package_id=None):
     note = data.get("note") or data.get("update_note") or ""
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     with db() as con:
-        con.execute("UPDATE packages SET status=%s, updated_at=%s WHERE id=%s", (status, now, pkg["id"]))
+        con.execute("UPDATE packages SET status=%s, current_location=%s, note=%s, updated_at=%s WHERE id=%s", (status, location, note, now, pkg["id"]))
         con.execute("INSERT INTO events(package_id,status,location,note,created_at) VALUES(%s,%s,%s,%s,%s)", (pkg["id"], status, location, note, now))
         try:
             con.execute("INSERT INTO notifications (package_id, message, is_read, created_at) VALUES (%s, %s, 0, %s)", (pid, f"Your package {pkg['tracking_no']} status updated to {status} - {location}", now))
