@@ -336,6 +336,13 @@ def drivers_new():
     try: return render_template("new_driver.html")
     except: return '<h1>Add Driver</h1><form method="POST">Name:<input name="name" required><br>Phone:<input name="phone"><br><button>Create</button></form>'
 
+@app.route('/drivers/delete/<int:driver_id>', methods=['POST'])
+def drivers_delete(driver_id):
+    with db() as con:
+        con.execute("DELETE FROM drivers WHERE id=?", (driver_id,))
+        con.commit()
+    return redirect(url_for("drivers_list"))
+
 # --- PACKAGES ---
 @app.route('/packages')
 def packages_list():
