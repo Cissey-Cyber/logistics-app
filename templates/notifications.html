@@ -24,8 +24,8 @@
   </div>
 
   <div class="stats">
-    <div class="stat"><b>{{ notifications|length if notifications else 3 }}</b><span>Total Notifications</span></div>
-    <div class="stat"><b style="color:#00b894">3</b><span>Sent</span></div>
+    <div class="stat"><b>{{ notifications|length if notifications else 6 }}</b><span>Total Notifications</span></div>
+    <div class="stat"><b style="color:#00b894">6</b><span>Sent</span></div>
     <div class="stat"><b style="color:#0f2a4a">3</b><span>Delivered</span></div>
   </div>
 
@@ -75,6 +75,26 @@
 <td><span class="badge-sent">✅ Sent</span></td>
 <td><span class="badge-delivered">📦 delivered</span></td>
 <td>19/11/2026<br><small>2:22 PM</small></td>
+</tr>
+    <tr>
+<td><b>4</b></td>
+<td><b>📦 LDT-0004</b></td>
+<td><b>Emmanuel Origbo</b><br><small>Bwari Central, Abaja Central Abuja</small></td>
+<td>07027995555</td>
+<td>✅ Your package LDT-0004 has been received. It is being prepared for delivery.</td>
+<td><span class="badge-sent">✅ Sent</span></td>
+<td><span class="badge-delivered">In Transit</span></td>
+<td>23/11/2026<br><small>2:20 PM</small></td>
+</tr>
+<tr>
+<td><b>5</b></td>
+<td><b>📦 LDT-0005</b></td>
+<td><b>Fatima Yusuf</b><br><small>Nasarawa Kano, Yan kaba Kano</small></td>
+<td>08033332222</td>
+<td>✅ Your package LDT-0005 is out for delivery. Rider is on the way to Yan kaba kano.</td>
+<td><span class="badge-sent">✅ Sent</span></td>
+<td><span class="badge-delivered">out for delivery</span></td>
+<td>23/11/2026<br><small>1:52 PM</small></td>
 </tr>
     {% endif %}
   </table>
