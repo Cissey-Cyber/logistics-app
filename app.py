@@ -323,7 +323,7 @@ def drivers_list():
         html = "<h1>Drivers</h1><a href='/drivers/new'>Add Driver</a> | <a href='/'>Home</a><ul>"
         with db() as con:
             drivers = con.execute("SELECT * FROM drivers").fetchall()
-        for d in drivers: html+=f"<li>{d['name']} - {d['status']}</li>"
+        for d in drivers: html+=f"<li>{d['name']} - {d['status']} - {d['phone']} <form method='POST' action='/drivers/delete/{d['id']}' style='display:inline'><button style='background:red;color:white;border:none;padding:4px 8px;border-radius:4px'>Remove</button></form></li>"
         return html
 
 @app.route('/drivers/new', methods=['GET','POST'])
